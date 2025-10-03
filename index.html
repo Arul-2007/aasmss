@@ -148,8 +148,7 @@
 </section>
 <script>
   // ================= Firebase ==================
-
-   const firebaseConfig = {
+  const firebaseConfig = {
     apiKey: "AIzaSyB8T7Y692ytTeHlfdAPQ9fOvZ3e2qEPTKs",
     authDomain: "aasms-6a83a.firebaseapp.com",
     projectId: "aasms-6a83a",
@@ -163,16 +162,6 @@
   const loginSection = document.getElementById("loginSection");
   const dashboardSection = document.getElementById("dashboardSection");
   const statusEl = document.getElementById("status");
-
-  // ✅ Device ID generator
-  function getDeviceId() {
-    let deviceId = localStorage.getItem("deviceId");
-    if (!deviceId) {
-      deviceId = 'dev-' + Math.random().toString(36).substring(2) + Date.now();
-      localStorage.setItem("deviceId", deviceId);
-    }
-    return deviceId;
-  }
 
   // ================= LOGIN (Firestore only) ==================
   document.getElementById("loginForm").addEventListener("submit", async (e) => {
@@ -202,28 +191,15 @@
       const student = doc.data();
 
       if (student.password === password) {
-        const deviceId = getDeviceId();
-
-        if (!student.deviceId) {
-          // First login → save device ID
-          await db.collection("students").doc(doc.id).update({ deviceId });
-          statusEl.textContent = "✅ Device registered & Login successful!";
-          statusEl.style.color = "green";
-        } else if (student.deviceId !== deviceId) {
-          // Block if device mismatch
-          statusEl.textContent = "❌ Login blocked! Account already registered on another device.";
-          statusEl.style.color = "red";
-          return;
-        }
-
-        // ✅ Normal login flow
+        statusEl.textContent = "✅ Login successful! Redirecting...";
+        statusEl.style.color = "green";
         localStorage.setItem("studentId", doc.id);
+
         setTimeout(() => {
           loginSection.style.display = "none";
           dashboardSection.style.display = "block";
           initDashboard(doc.id, student);
         }, 1000);
-
       } else {
         statusEl.textContent = "❌ Incorrect password";
         statusEl.style.color = "red";
@@ -247,7 +223,6 @@
     btn.classList.add("active");
   }
 
-  // (⚡ Rest of your code remains unchanged below)
   const periods = [
     { start: "09:00", end: "09:50" },
     { start: "09:50", end: "10:40" },
@@ -273,8 +248,8 @@
     const startTime = new Date();
     startTime.setHours(sh, sm, 0, 0);
     const diffMinutes = (now - startTime)/60000;
-    if (diffMinutes <= 15) return "Present";
-    if (diffMinutes > 15 && diffMinutes <= 50) return "Late";
+    if (diffMinutes <= 10) return "Present";
+    if (diffMinutes > 10 && diffMinutes <= 50) return "Late";
     return "Absent";
   }
 
