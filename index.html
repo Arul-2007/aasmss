@@ -149,12 +149,14 @@
 <script>
   // ================= Firebase ==================
   const firebaseConfig = {
-    apiKey: "AIzaSyB8T7Y692ytTeHlfdAPQ9fOvZ3e2qEPTKs",
-    authDomain: "aasms-6a83a.firebaseapp.com",
-    projectId: "aasms-6a83a",
-    storageBucket: "aasms-6a83a.firebasestorage.app",
-    messagingSenderId: "475962750818",
-    appId: "1:475962750818:web:53b5064c18c7f1e56f1e3b"
+    apiKey: "AIzaSyA4nZT0JAVdwjEorcnog525pw0YJ_94qu8",
+  authDomain: "aasms-81a44.firebaseapp.com",
+  projectId: "aasms-81a44",
+  storageBucket: "aasms-81a44.firebasestorage.app",
+  messagingSenderId: "1052629144759",
+  appId: "1:1052629144759:web:e6ed9b589743ebd43ee932",
+  measurementId: "G-ZHGX6RG405"
+
   };
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
@@ -269,11 +271,13 @@
       status: status, timestamp: firebase.firestore.FieldValue.serverTimestamp()
     });
 
-    const row = document.querySelector(`#attendanceTable tbody tr:nth-child(${periodIndex+1})`);
-    row.cells[2].textContent = type;
-    row.cells[3].textContent = status;
-    row.cells[3].className = status.toLowerCase();
-    document.getElementById("feedback").textContent = `✅ ${status} marked for ${type} in Period ${periodIndex+1}`;
+    const row = document.querySelector(`#attendanceTable tbody tr[data-period="${periodIndex+1}"]`);
+if (row) {
+  row.cells[2].textContent = type;
+  row.cells[3].textContent = status;
+  row.cells[3].className = status.toLowerCase();
+}
+
 
     // ✅ Show toast
     const toast = document.getElementById("toast");
@@ -291,15 +295,23 @@
         const dayRow = `<tr><td colspan="3" style="background:#ffe6d9; font-weight:bold;">${day}</td></tr>`;
         tbody.innerHTML += dayRow;
 
-        Object.keys(student.timetable[day]).forEach((p, i) => {
-          const row = student.timetable[day][p];
-          tbody.innerHTML += `
-            <tr>
-              <td>${i+1}</td>
-              <td>${periods[i].start} – ${periods[i].end}</td>
-              <td>${row.subject} (${row.status})</td>
-            </tr>`;
-        });
+        // Sort the periods (assumes keys like "p1", "p2", ...)
+const sortedPeriods = Object.keys(student.timetable[day])
+  .sort((a, b) => {
+    return parseInt(a.replace(/\D/g, "")) - parseInt(b.replace(/\D/g, ""));
+  });
+
+sortedPeriods.forEach((p, i) => {
+  const row = student.timetable[day][p];
+  tbody.innerHTML += `
+    <tr data-period="${i+1}">
+      <td>${i+1}</td>
+      <td>${periods[i].start} – ${periods[i].end}</td>
+      <td>${row.subject} (${row.status})</td>
+    </tr>`;
+});
+
+
       });
     }
 
