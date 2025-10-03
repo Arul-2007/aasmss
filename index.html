@@ -273,8 +273,8 @@
     const startTime = new Date();
     startTime.setHours(sh, sm, 0, 0);
     const diffMinutes = (now - startTime)/60000;
-    if (diffMinutes <= 10) return "Present";
-    if (diffMinutes > 10 && diffMinutes <= 50) return "Late";
+    if (diffMinutes <= 15) return "Present";
+    if (diffMinutes > 15 && diffMinutes <= 50) return "Late";
     return "Absent";
   }
 
