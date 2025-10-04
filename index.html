@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -258,12 +257,13 @@
 
   async function markAttendance(studentId, periodIndex, status, now, type) {
     const today = new Date().toISOString().split("T")[0];
-    const ref = db.collection("attendance").doc(studentId).collection(today).doc(`period${periodIndex + 1}`);
+ const ref = db.collection("attendance").doc(studentId).collection(today).doc(`period${periodIndex + 1}`);
+
 
     // ✅ Prevent double scan
     const existing = await ref.get();
     if (existing.exists) {
-      document.getElementById("feedback").textContent = "⚠️ Already marked for this period!";
+      document.getElementById("feedback").textContent = "⚠ Already marked for this period!";
       return;
     }
 
@@ -272,7 +272,7 @@
       status: status, timestamp: firebase.firestore.FieldValue.serverTimestamp()
     });
 
-    const row = document.querySelector(`#attendanceTable tbody tr[data-period="${periodIndex + 1}"]`);
+   const row = document.querySelector(`#attendanceTable tbody tr[data-period="${periodIndex + 1}"]`);
     if (row) {
       row.cells[2].textContent = type;
       row.cells[3].textContent = status;
@@ -281,7 +281,7 @@
 
     // ✅ Show toast
     const toast = document.getElementById("toast");
-    toast.textContent = `✅ ${status} - ${type} (Period ${periodIndex + 1})`;
+toast.textContent = `✅ ${status} - ${type} (Period ${periodIndex + 1})`;
     toast.style.display = "block";
     setTimeout(() => { toast.style.display = "none"; }, 3000);
   }
@@ -370,6 +370,10 @@ function initDashboard(studentId, student) {
       </tr>`;
   }
 
+  // ... rest of your initDashboard stays unchanged
+
+
+
   let lastScanTime = 0;
   function onScanSuccess(decodedText) {
     const now = new Date();
@@ -385,8 +389,28 @@ function initDashboard(studentId, student) {
 
     const text = decodedText.trim().toUpperCase().replace(/\s+/g, "");
     if (text === "NORMALCLASSROOM") {
-      markAttendance(studentId, periodIndex, getStatus(periodIndex, now), now, "Normal");
-    } else if (text === "SKILLCLASSROOM") {
+  // Get subject of this period from timetable
+  const todayName = now.toLocaleDateString("en-US", { weekday: "long" });
+  const todaySchedule = student.timetable[todayName];
+  const periodKey = Object.keys(todaySchedule)[periodIndex];
+  const subject = todaySchedule[periodKey].subject;
+
+  // Always mark current period
+  markAttendance(studentId, periodIndex, getStatus(periodIndex, now), now, "Normal");
+
+  // If subject contains "Lab" → mark consecutive lab periods too
+  if (subject.toLowerCase().includes("lab")) {
+    for (let i = periodIndex + 1; i < periods.length; i++) {
+      const nextKey = Object.keys(todaySchedule)[i];
+      if (todaySchedule[nextKey] && todaySchedule[nextKey].subject === subject) {
+        markAttendance(studentId, i, getStatus(i, now), now, "Normal");
+      } else {
+        break; // stop when subject changes
+      }
+    }
+  }
+}
+ else if (text === "SKILLCLASSROOM") {
       markAttendance(studentId, periodIndex, getStatus(periodIndex, now), now, "Skill");
     } else {
       document.getElementById("feedback").textContent = "❌ Invalid QR Code!";
