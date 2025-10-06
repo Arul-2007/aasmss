@@ -148,7 +148,7 @@
 <script>
   // ================= Firebase ==================
 const firebaseConfig = {
-  apiKey: "AIzaSyB8T7Y692ytTeHlfdAPQ9fOvZ3e2qEPTKs",
+    apiKey: "AIzaSyB8T7Y692ytTeHlfdAPQ9fOvZ3e2qEPTKs",
   authDomain: "aasms-6a83a.firebaseapp.com",
   projectId: "aasms-6a83a",
   storageBucket: "aasms-6a83a.firebasestorage.app",
@@ -336,86 +336,68 @@ toast.textContent = `✅ ${status} - ${type} (Period ${periodIndex + 1})`;
   // ================== DASHBOARD ==================
 // ================== DASHBOARD ==================
 async function initDashboard(studentId, student) {
+  // ================= TIMETABLE =================
   if (student.timetable) {
     const tbody = document.getElementById("timetableBody");
     tbody.innerHTML = "";
 
-    Object.keys(student.timetable).forEach(day => {
-      const dayRow = `<tr><td colspan="3" style="background:#ffe6d9; font-weight:bold;">${day}</td></tr>`;
-      tbody.innerHTML += dayRow;
+    const todayName = new Date().toLocaleDateString("en-US", { weekday: "long" });
+    const todaySchedule = student.timetable[todayName] || {};
 
-      const sortedPeriods = Object.keys(student.timetable[day])
-        .sort((a, b) => parseInt(a.replace(/\D/g, "")) - parseInt(b.replace(/\D/g, "")));
-
-      sortedPeriods.forEach((p, i) => {
-        const row = student.timetable[day][p];
-        tbody.innerHTML += `
-          <tr data-period="${i + 1}">
-            <td>${i + 1}</td>
-            <td>${periods[i].start} – ${periods[i].end}</td>
-            <td>${row.subject} (${row.status})</td>
-          </tr>`;
-      });
+    Object.keys(todaySchedule).forEach((p, i) => {
+      const row = todaySchedule[p];
+      tbody.innerHTML += `
+        <tr data-period="${i + 1}">
+          <td>${i + 1}</td>
+          <td>${periods[i].start} – ${periods[i].end}</td>
+          <td>${row.subject}</td>
+        </tr>`;
     });
   }
 
-  // === Build Attendance Table with default "Absent" ===
-  const now = new Date();
-  const currentMinutes = now.getHours() * 60 + now.getMinutes();
-
+  // ================= ATTENDANCE TABLE =================
   const atBody = document.querySelector("#attendanceTable tbody");
   atBody.innerHTML = "";
 
-  // Firestore ref for today
-  const today = now.toISOString().split("T")[0];
+  // Build table rows from Firestore
+  const today = new Date().toISOString().split("T")[0];
   const attendanceRef = db.collection("attendance").doc(studentId).collection(today);
+  const snapshot = await attendanceRef.get();
 
   for (let i = 0; i < periods.length; i++) {
-    const periodId = `period${i + 1}`;
-    const [sh, sm] = periods[i].start.split(":").map(Number);
-    const [eh, em] = periods[i].end.split(":").map(Number);
-    const periodEndMinutes = eh * 60 + em;
-
-    // Default status is "-"
-    let status = "-";
-    let type = "-";
-
-    // If period is in the past → mark Absent
-    if (periodEndMinutes <= currentMinutes) {
-      status = "Absent";
-
-      // ✅ Auto-write Absent to Firestore if not already exists
-      const ref = attendanceRef.doc(periodId);
-      try {
-        const docSnap = await ref.get();
-        if (!docSnap.exists) {
-          await ref.set({
-            period: i + 1,
-            status: "Absent",
-            type: "-",
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
-          });
-        }
-      } catch(err) {
-        console.error("Error auto-saving Absent:", err);
-      }
-    }
-
-    // Build table row
+    const doc = snapshot.docs.find(d => d.id === `period${i + 1}`);
+    const data = doc ? doc.data() : null;
     atBody.innerHTML += `
       <tr data-period="${i + 1}">
         <td>${i + 1}</td>
         <td>${periods[i].start} – ${periods[i].end}</td>
-        <td>${type}</td>
-        <td class="${status.toLowerCase()}">${status}</td>
+        <td>${data ? data.type : '-'}</td>
+        <td class="${data ? data.status.toLowerCase() : 'absent'}">
+          ${data ? data.status : 'Absent'}
+        </td>
       </tr>`;
   }
 
-  // ====== Rest of initDashboard remains unchanged ======
+  // ================= REAL-TIME UPDATES =================
+  attendanceRef.onSnapshot(snapshot => {
+    const rows = document.querySelectorAll("#attendanceTable tbody tr");
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      const periodIndex = data.period - 1;
+      const row = rows[periodIndex];
+      if (row) {
+        row.cells[2].textContent = data.type || "-";
+        row.cells[3].textContent = data.status || "Absent";
+        row.cells[3].className = (data.status || "absent").toLowerCase();
+      }
+    });
+  });
+
+  // QR Scanner init remains same...
 
 
 
-
+  // ================== QR SCANNER CONTROL ==================
   let lastScanTime = 0;
   function onScanSuccess(decodedText) {
     const now = new Date();
@@ -430,55 +412,37 @@ async function initDashboard(studentId, student) {
     }
 
     const text = decodedText.trim().toUpperCase().replace(/\s+/g, "");
+    const todayName = now.toLocaleDateString("en-US", { weekday: "long" });
+    const todaySchedule = student.timetable[todayName];
+    const periodKey = Object.keys(todaySchedule)[periodIndex];
+    const subject = todaySchedule[periodKey].subject;
+
     if (text === "NORMALCLASSROOM") {
-  // Get subject of this period from timetable
-  const todayName = now.toLocaleDateString("en-US", { weekday: "long" });
-  const todaySchedule = student.timetable[todayName];
-  const periodKey = Object.keys(todaySchedule)[periodIndex];
-  const subject = todaySchedule[periodKey].subject;
+      markAttendance(studentId, periodIndex, getStatus(periodIndex, now), now, "Normal");
 
-  // Always mark current period
-  markAttendance(studentId, periodIndex, getStatus(periodIndex, now), now, "Normal");
-
-  // If subject contains "Lab" → mark consecutive lab periods too
-  if (subject.toLowerCase().includes("lab")) {
-    for (let i = periodIndex + 1; i < periods.length; i++) {
-      const nextKey = Object.keys(todaySchedule)[i];
-      if (todaySchedule[nextKey] && todaySchedule[nextKey].subject === subject) {
-        markAttendance(studentId, i, getStatus(i, now), now, "Normal");
-      } else {
-        break; // stop when subject changes
+      // Mark consecutive lab periods if any
+      if (subject.toLowerCase().includes("lab")) {
+        for (let i = periodIndex + 1; i < periods.length; i++) {
+          const nextKey = Object.keys(todaySchedule)[i];
+          if (todaySchedule[nextKey] && todaySchedule[nextKey].subject === subject) {
+            markAttendance(studentId, i, getStatus(i, now), now, "Normal");
+          } else break;
+        }
       }
-    }
-  }
-}
- else if (text === "SKILLCLASSROOM") {
+    } else if (text === "SKILLCLASSROOM") {
       markAttendance(studentId, periodIndex, getStatus(periodIndex, now), now, "Skill");
     } else {
       document.getElementById("feedback").textContent = "❌ Invalid QR Code!";
     }
   }
-  function onScanFailure(err) { }
 
-  // ✅ Start scanner
+  function onScanFailure(err) {}
+
   startScanner(onScanSuccess, onScanFailure);
 
-  // ✅ Real-time listener for today's attendance
-  
-  db.collection("attendance").doc(studentId).collection(today)
-    .onSnapshot(snapshot => {
-      snapshot.forEach(doc => {
-        const data = doc.data();
-        const periodIndex = data.period - 1;
-        const row = document.querySelector(`#attendanceTable tbody tr[data-period="${periodIndex + 1}"]`);
-        if (row) {
-          row.cells[2].textContent = data.type || "-";
-          row.cells[3].textContent = data.status || "Absent";
-          row.cells[3].className = (data.status || "Absent").toLowerCase();
-        }
-      });
-    });
+ 
 }
+
 
 
   // ================== AUTO LOGIN ==================
