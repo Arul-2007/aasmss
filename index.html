@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,9 +13,9 @@
 
   <style>
     body { font-family: Arial, sans-serif; margin:0; background:#fffaf5; }
-    #loginSection { display:flex; justify-content:center; align-items:center; height:100vh; background:#fff4e6; }
+    #loginSection { display:flex; justify-content:center; align-items:center; height:100vh; background:#fff4e6; padding: 10px;}
     .login-box { max-width:350px; width:100%; background:#fff; padding:24px; border-radius:10px;
-      box-shadow:0 4px 12px rgba(0,0,0,0.15); border-top:6px solid #ff6600; }
+      box-shadow:0 4px 12px rgba(0,0,0,0.15); border-top:6px solid #ff6600; box-sizing:border-box;}
     .login-box h1 { text-align:center; margin-bottom:20px; color:#ff6600; }
     form { display:flex; flex-direction:column; gap:12px; }
     input, button { padding:10px; border:1px solid #ccc; border-radius:6px; font-size:14px; }
@@ -29,8 +30,11 @@
     header button { background:#fff; color:#ff6600; border:none; border-radius:5px;
       padding:5px 10px; cursor:pointer; font-weight:bold; }
     header button:hover { background:#ffe6d9; }
+    header { position:fixed; top:0; width:100%; }
+    .tab-nav { position:fixed; bottom:0; width:100%; }
 
-    main { padding:70px 10px 80px; }
+
+    main { padding:90px 10px 90px; }
     .tab { display:none; }
     .tab.active { display:block; }
 
@@ -41,8 +45,15 @@
       font-weight:bold; color:#555; display:flex; flex-direction:column; align-items:center; gap:3px; }
     .tab-nav button.active { color:#ff6600; }
 
-    #reader { width:90%; max-width:400px; height:70%; max-height:400px; margin:15px auto;
+    #reader { width:100%; max-width:400px; height: 300px;margin:15px auto;
       border:2px solid #ff6600; border-radius:10px; }
+      @media(min-width:800px) {
+  #reader { height:400px; } /* larger for desktop */
+}
+input, button {
+  padding:12px;
+  font-size:16px;
+}
     #feedback { text-align:center; margin:10px; font-weight:bold; }
 
     table { width:100%; border-collapse:collapse; font-size:0.85rem; margin-top:10px; }
@@ -53,12 +64,16 @@
     td.absent { background:#ffcdd2; }
     td.notmarked { background:#f5f5f5; }
     .table-container { overflow-x:auto; }
+    table { width:100%; font-size:0.85rem; }
 
     /* ✅ Toast Notification */
     #toast {
       position: fixed;
       bottom: 20px;
       right: 20px;
+      left:50%; 
+      transform:translateX(-50%); 
+      max-width:90%;
       background: #4CAF50;
       color: white;
       padding: 12px 20px;
@@ -68,6 +83,13 @@
       box-shadow: 0 4px 8px rgba(0,0,0,0.2);
       z-index: 9999;
     }
+    @media (max-width: 600px) {
+  table { font-size:0.75rem; }
+}
+@media (min-width: 601px) {
+  table { font-size:0.85rem; }
+}
+
   </style>
 </head>
 <body>
@@ -337,23 +359,30 @@ toast.textContent = `✅ ${status} - ${type} (Period ${periodIndex + 1})`;
 // ================== DASHBOARD ==================
 async function initDashboard(studentId, student) {
   // ================= TIMETABLE =================
-  if (student.timetable) {
-    const tbody = document.getElementById("timetableBody");
-    tbody.innerHTML = "";
+if (student.timetable) {
+  const tbody = document.getElementById("timetableBody");
+  tbody.innerHTML = "";
 
-    const todayName = new Date().toLocaleDateString("en-US", { weekday: "long" });
-    const todaySchedule = student.timetable[todayName] || {};
+  const todayName = new Date().toLocaleDateString("en-US", { weekday: "long" });
+  const todaySchedule = student.timetable[todayName] || {};
 
-    Object.keys(todaySchedule).forEach((p, i) => {
-      const row = todaySchedule[p];
-      tbody.innerHTML += `
-        <tr data-period="${i + 1}">
-          <td>${i + 1}</td>
-          <td>${periods[i].start} – ${periods[i].end}</td>
-          <td>${row.subject}</td>
-        </tr>`;
-    });
-  }
+  // Sort periods like period1, period2, ...
+  const sortedPeriods = Object.keys(todaySchedule).sort((a, b) => {
+    const numA = parseInt(a.replace(/\D/g, "")); // extract number
+    const numB = parseInt(b.replace(/\D/g, ""));
+    return numA - numB;
+  });
+
+  sortedPeriods.forEach((p, i) => {
+    const row = todaySchedule[p];
+    tbody.innerHTML += `
+      <tr data-period="${i + 1}">
+        <td>${i + 1}</td>
+        <td>${periods[i].start} – ${periods[i].end}</td>
+        <td>${row.subject}</td>
+      </tr>`;
+  });
+}
 
   // ================= ATTENDANCE TABLE =================
   const atBody = document.querySelector("#attendanceTable tbody");
