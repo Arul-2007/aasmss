@@ -12,318 +12,88 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 
-  <style>/* ================== RESET & BASE ================== */
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-  font-family: 'Inter', sans-serif;
-}
-body {
-  background: #f4f6fb;
-  color: #333;
-  line-height: 1.5;
-}
+  <style>
+    body { font-family: Arial, sans-serif; margin:0; background:#fffaf5; }
+    #loginSection { display:flex; justify-content:center; align-items:center; height:100vh; background:#fff4e6; padding: 10px;}
+    .login-box { max-width:350px; width:100%; background:#fff; padding:24px; border-radius:10px;
+      box-shadow:0 4px 12px rgba(0,0,0,0.15); border-top:6px solid #ff6600; box-sizing:border-box;}
+    .login-box h1 { text-align:center; margin-bottom:20px; color:#ff6600; }
+    form { display:flex; flex-direction:column; gap:12px; }
+    input, button { padding:10px; border:1px solid #ccc; border-radius:6px; font-size:14px; }
+    button { background:#ff6600; color:white; border:none; cursor:pointer; }
+    button:hover { background:#e65c00; }
+    #status { margin-top:10px; text-align:center; font-size:14px; }
 
-/* ================== LOGIN SECTION ================== */
-#loginSection {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #0f9b8e 100%);
-
-
-
-
-}
-
-.login-box {
-  background: #c9d8d9;
-  padding: 40px 30px;
-  border-radius: 12px;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
-  width: 100%;
-  max-width: 400px;
-  text-align: center;
-}
-
-.login-box h1 {
-  color: #4e54c8;
-  margin-bottom: 25px;
-  font-size: 1.8rem;
-  font-weight: 700;
-}
-
-.login-box label {
-  display: block;
-  margin-bottom: 6px;
-  font-weight: 600;
-  color: #555;
-  font-size: 0.9rem;
-}
-
-.login-box input {
-  width: 100%;
-  padding: 12px 15px;
-  margin-bottom: 15px;
-  border-radius: 8px;
-  border: 1px solid #ddd;
-  font-size: 0.95rem;
-  transition: 0.3s;
-}
-
-.login-box input:focus {
-  border-color: #4e54c8;
-  box-shadow: 0 0 5px rgba(78, 84, 200, 0.4);
-  outline: none;
-}
-
-.login-box button {
-  width: 100%;
-  padding: 12px;
-  background: #4e54c8;
-  color: #fff;
-  border: none;
-  font-weight: 600;
-  font-size: 1rem;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: 0.3s;
-}
-
-.login-box button:hover {
-  background: #3b3fc1;
-}
-
-#status {
-  margin-top: 10px;
-  font-size: 0.85rem;
-}
-
-/* ================== DASHBOARD HEADER ================== */
-header {
-  background: #4e54c8;
-  color: #fff;
-  padding: 0.8rem 1rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-weight: 600;
-  font-size: 1.15rem;
-  position: fixed;
-  top: 0;
-  width: 100%;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  z-index: 10;
-}
-
-header button {
-  background: #fff;
-  color: #4e54c8;
-  border: none;
-  border-radius: 6px;
-  padding: 6px 12px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: 0.3s;
-}
-
-header button:hover {
-  background: #e6e6ff;
-}
-
-/* ================== MAIN CONTENT ================== */
-main {
-  padding: 100px 20px 90px;
-}
-
-/* ================== TABS ================== */
-.tab {
-  display: none;
-  animation: fadeIn 0.4s ease-in-out;
-}
-.tab.active {
-  display: block;
-}
-
-.tab-nav {
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  background: #fff;
-  border-top: 1px solid #ddd;
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 70px;
-  z-index: 10;
-  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
-}
-
-.tab-nav button {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  color: #555;
-  font-size: 0.85rem;
-  background: none;
-  border: none;
-  cursor: pointer;
-  transition: 0.3s;
-}
-
-.tab-nav button span {
-  font-size: 0.7rem;
-}
-
-.tab-nav button.active {
-  color: #4e54c8;
-}
-
-/* ================== QR SCANNER ================== */
-#reader {
-  width: 90%;
-  max-width: 400px;
-  height: 320px;
-  margin: 20px auto;
-  border-radius: 15px;
-  border: 3px solid #4e54c8;
-  background: #f9f9f9;
-  box-shadow: 0 6px 15px rgba(0,0,0,0.1);
-}
-
-/* ================== FEEDBACK & TOAST ================== */
-#feedback {
-  text-align: center;
-  font-weight: 600;
-  margin-top: 12px;
-  color: #4e54c8;
-}
-
-#toast {
-  position: fixed;
-  bottom: 30px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #4e54c8;
-  color: #fff;
-  padding: 14px 22px;
-  border-radius: 10px;
-  display: none;
-  font-weight: bold;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.2);
-  z-index: 9999;
-}
-
-/* ================== TABLE ================== */
-.table-container {
-  overflow-x: auto;
-  margin-top: 15px;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: #fff;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-}
-
-th, td {
-  padding: 12px 8px;
-  text-align: center;
-  border-bottom: 1px solid #eee;
-  font-size: 0.85rem;
-}
-
-th {
-  background: #4e54c8;
-  color: #fff;
-  font-weight: 600;
-}
-
-td.present {
-  background: #c8e6c9;
-  color: #2e7d32;
-  font-weight: 600;
-}
-
-td.late {
-  background: #ffe0b2;
-  color: #ef6c00;
-  font-weight: 600;
-}
-
-td.absent {
-  background: #ffcdd2;
-  color: #c62828;
-  font-weight: 600;
-}
-
-td.notmarked {
-  background: #f5f5f5;
-  color: #888;
-  font-style: italic;
-}
+    #dashboardSection { display:none; }
+    header { background:#ff6600; color:white; text-align:center; padding:0.8rem;
+      font-size:1.2rem; position:fixed; top:0; width:100%; z-index:10;
+      display:flex; justify-content:space-between; align-items:center; }
+    header button { background:#fff; color:#ff6600; border:none; border-radius:5px;
+      padding:5px 10px; cursor:pointer; font-weight:bold; }
+    header button:hover { background:#ffe6d9; }
+    header { position:fixed; top:0; width:100%; }
+    .tab-nav { position:fixed; bottom:0; width:100%; }
 
 
-/* ================== ANIMATION ================== */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+    main { padding:90px 10px 90px; }
+    .tab { display:none; }
+    .tab.active { display:block; }
+
+    .tab-nav { display:flex; justify-content:space-around; align-items:center;
+      background:#fff; border-top:1px solid #ccc; position:fixed; bottom:0; left:0; right:0;
+      height:60px; z-index:10; }
+    .tab-nav button { flex:1; padding:8px; border:none; background:none; font-size:0.9rem;
+      font-weight:bold; color:#555; display:flex; flex-direction:column; align-items:center; gap:3px; }
+    .tab-nav button.active { color:#ff6600; }
+
+    #reader { width:100%; max-width:400px; height: 300px;margin:15px auto;
+      border:2px solid #ff6600; border-radius:10px; }
+      @media(min-width:800px) {
+  #reader { height:400px; } /* larger for desktop */
+}
+input, button {
+  padding:12px;
+  font-size:16px;
+}
+    #feedback { text-align:center; margin:10px; font-weight:bold; }
+
+    table { width:100%; border-collapse:collapse; font-size:0.85rem; margin-top:10px; }
+    th, td { border:1px solid #ddd; padding:6px; text-align:center; }
+    th { background:#ff6600; color:white; font-size:0.9rem; }
+    td.present { background:#c8e6c9; }
+    td.late { background:#ffe0b2; }
+    td.absent { background:#ffcdd2; }
+    td.notmarked { background:#f5f5f5; }
+    .table-container { overflow-x:auto; }
+    table { width:100%; font-size:0.85rem; }
+
+    /* ✅ Toast Notification */
+    #toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      left:50%; 
+      transform:translateX(-50%); 
+      max-width:90%;
+      background: #4CAF50;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 6px;
+      display: none;
+      font-weight: bold;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      z-index: 9999;
+    }
+    @media (max-width: 600px) {
+  table { font-size:0.75rem; }
+}
+@media (min-width: 601px) {
+  table { font-size:0.85rem; }
 }
 
-/* ================== RESPONSIVE ================== */
-@media (max-width: 600px) {
-  #reader {
-    width: 95%;
-    height: 420px; /* bigger height for easier scanning */
-  }
-}
-@media (min-width: 601px) and (max-width: 900px) {
-  #reader { height: 300px; }
-}
-#dashboardSection {
-  display: none; /* Hide dashboard by default */
-}
-
-#loginSection {
-  display: flex; /* Show only login page initially */
-}
-#loginSection, #dashboardSection {
-  transition: opacity 0.3s ease;
-  opacity: 1;
-}
-
-</style>
+  </style>
 </head>
 <body>
-  <!-- Global loading overlay -->
-<div id="loadingOverlay" style="
-  display:none; position:fixed; top:0; left:0; right:0; bottom:0;
-  background:rgba(255,255,255,0.8); z-index:9999;
-  justify-content:center; align-items:center; flex-direction:column;
-  font-family:'Inter',sans-serif; color:#4e54c8; font-weight:600;">
-  <div class="spinner" style="
-    border:4px solid #ddd; border-top:4px solid #4e54c8;
-    border-radius:50%; width:40px; height:40px;
-    animation:spin 1s linear infinite;"></div>
-  <p style="margin-top:12px;">Logging in...</p>
-</div>
-
-<style>
-@keyframes spin {
-  0% {transform:rotate(0deg);}
-  100% {transform:rotate(360deg);}
-}
-</style>
-
 
 <!-- ✅ Toast -->
 <div id="toast">✅ Scan Successful</div>
@@ -345,14 +115,10 @@ td.notmarked {
 
 <!-- ========== DASHBOARD SECTION ========== -->
 <section id="dashboardSection">
- <header>
-  📘 <span id="studentName">Student Dashboard</span>
-  <div style="display:flex; gap:8px; align-items:center;">
-    <button id="refreshButton" title="Reload Data">🔄</button>
+  <header>
+    📘 Student Dashboard
     <button onclick="logout()">Logout</button>
-  </div>
-</header>
-
+  </header>
 
   <main>
     <!-- Scanner Tab -->
@@ -360,10 +126,6 @@ td.notmarked {
       <h3 style="text-align:center;">Scan QR to Mark Attendance</h3>
       <div id="reader"></div>
       <div id="feedback">Waiting for scan...</div>
-     
-
-     
-
     </div>
 
     <!-- Attendance Tab -->
@@ -375,17 +137,15 @@ td.notmarked {
             <tr><th>Period</th><th>Time</th><th>Type</th><th>Status</th></tr>
           </thead>
           <tbody>
-  <tr data-period="1"><td>1</td><td>9:00 – 9:50</td><td>-</td><td class="absent">Absent</td></tr>
-  <tr data-period="2"><td>2</td><td>9:50 – 10:40</td><td>-</td><td class="absent">Absent</td></tr>
-  <tr data-period="3"><td>3</td><td>10:55 – 11:45</td><td>-</td><td class="absent">Absent</td></tr>
-  <tr data-period="4"><td>4</td><td>11:45 – 12:35</td><td>-</td><td class="absent">Absent</td></tr>
-  <tr data-period="5"><td>5</td><td>1:30 – 2:20</td><td>-</td><td class="absent">Absent</td></tr>
-  <tr data-period="6"><td>6</td><td>2:20 – 3:10</td><td>-</td><td class="absent">Absent</td></tr>
-  <tr data-period="7"><td>7</td><td>3:10 – 4:00</td><td>-</td><td class="absent">Absent</td></tr>
-  <tr data-period="8"><td>8</td><td>4:00 – 4:50</td><td>-</td><td class="absent">Absent</td></tr>
-</tbody>
-
-
+            <tr><td>1</td><td>9:00 – 9:50</td><td>-</td><td class="absent">Absent</td></tr>
+            <tr><td>2</td><td>9:50 – 10:40</td><td>-</td><td class="absent">Absent</td></tr>
+            <tr><td>3</td><td>10:55 – 11:45</td><td>-</td><td class="absent">Absent</td></tr>
+            <tr><td>4</td><td>11:45 – 12:35</td><td>-</td><td class="absent">Absent</td></tr>
+            <tr><td>5</td><td>1:30 – 2:20</td><td>-</td><td class="absent">Absent</td></tr>
+            <tr><td>6</td><td>2:20 – 3:10</td><td>-</td><td class="absent">Absent</td></tr>
+            <tr><td>7</td><td>3:10 – 4:00</td><td>-</td><td class="absent">Absent</td></tr>
+            <tr><td>8</td><td>4:00 – 4:50</td><td>-</td><td class="absent">Absent</td></tr>
+          </tbody>
         </table>
       </div>
     </div>
@@ -409,9 +169,6 @@ td.notmarked {
   </div>
 </section>
 <script>
-  let onScanSuccess;
-let onScanFailure;
-
   // ================= Firebase ==================
 const firebaseConfig = {
     apiKey: "AIzaSyB8T7Y692ytTeHlfdAPQ9fOvZ3e2qEPTKs",
@@ -457,28 +214,15 @@ const firebaseConfig = {
       const student = doc.data();
 
       if (student.password === password) {
-        statusEl.textContent = "";
-document.getElementById("loadingOverlay").style.display = "flex";
-        statusEl.style.color = "blue";
+        statusEl.textContent = "✅ Login successful! Redirecting...";
+        statusEl.style.color = "green";
         localStorage.setItem("studentId", doc.id);
 
-       
-  // smooth fade
-  
-  setTimeout(() => {
-  document.getElementById("loadingOverlay").style.display = "none";
-  loginSection.style.display = "none";
-  dashboardSection.style.display = "block";
-  initDashboard(doc.id, student);
-  dashboardSection.style.opacity = 0;
-dashboardSection.style.display = "block";
-requestAnimationFrame(() => {
-  dashboardSection.style.opacity = 1;
-});
-
-}, 300);
-
-
+        setTimeout(() => {
+          loginSection.style.display = "none";
+          dashboardSection.style.display = "block";
+          initDashboard(doc.id, student);
+        }, 1000);
       } else {
         statusEl.textContent = "❌ Incorrect password";
         statusEl.style.color = "red";
@@ -489,7 +233,19 @@ requestAnimationFrame(() => {
     }
   });
 
- 
+  function logout() {
+    localStorage.removeItem("studentId");
+    loginSection.style.display = "flex";
+    dashboardSection.style.display = "none";
+  }
+
+  function openTab(tabId, btn) {
+    document.querySelectorAll(".tab").forEach(tab => tab.classList.remove("active"));
+    document.querySelectorAll(".tab-nav button").forEach(b => b.classList.remove("active"));
+    document.getElementById(tabId).classList.add("active");
+    btn.classList.add("active");
+  }
+
   // ================= Period Timings ==================
   const periods = [
     { start: "09:00", end: "09:50" },
@@ -558,69 +314,37 @@ toast.textContent = `✅ ${status} - ${type} (Period ${periodIndex + 1})`;
   let html5QrCode;
   let scanning = false;
 
-  async function startScanner(onScanSuccess, onScanFailure) {
-  const feedback = document.getElementById("feedback");
-  document.getElementById("reader").innerHTML = "";
-
-  // Check if we already have camera permission
-  const devices = navigator.mediaDevices;
-  let permissionGranted = false;
-
-  try {
-    const permissions = await navigator.permissions.query({ name: "camera" });
-    if (permissions.state === "granted") {
-      permissionGranted = true;
-    } else if (permissions.state === "prompt") {
-      // Ask the user once
-      try {
-        await devices.getUserMedia({ video: true });
-        permissionGranted = true;
-      } catch {
-        permissionGranted = false;
-      }
-    }
-
-    // If denied previously → keep asking politely until allowed
-    while (!permissionGranted) {
-      feedback.textContent = "⚠️ Please allow camera access to start scanning.";
-      try {
-        await devices.getUserMedia({ video: true });
-        permissionGranted = true;
-      } catch {
-        // Wait 3 seconds before trying again
-        await new Promise(resolve => setTimeout(resolve, 3000));
-      }
-    }
-
-    // ✅ Once permission granted → start QR scanner
+  function startScanner(onScanSuccess, onScanFailure) {
     html5QrCode = new Html5Qrcode("reader");
-    const cameras = await Html5Qrcode.getCameras();
 
-    if (!cameras || cameras.length === 0) {
-      feedback.textContent = "❌ No camera devices found.";
-      return;
-    }
+    Html5Qrcode.getCameras().then(cameras => {
+      if (cameras && cameras.length) {
+        const cameraId = cameras.length > 1 ? cameras[1].id : cameras[0].id;
+        html5QrCode.start(
+          cameraId,
+          { fps: 10, qrbox: { width: 250, height: 250 } },
+          (decodedText) => {
+            onScanSuccess(decodedText);
 
-    const backCamera = cameras.find(cam => /back|rear|environment/i.test(cam.label));
-    const cameraId = backCamera ? backCamera.id : cameras[0].id;
-
-    await html5QrCode.start(
-      cameraId,
-      { fps: 10, qrbox: { width: 250, height: 250 } },
-      decodedText => {
-        onScanSuccess(decodedText);
-        html5QrCode.stop().then(() => (scanning = false));
-      },
-      onScanFailure
-    );
-
-    scanning = true;
-    feedback.textContent = "📸 Scanner ready. Align the QR code inside the box.";
-  } catch (error) {
-    feedback.textContent = "❌ Camera initialization failed: " + error.message;
+            // ✅ Stop camera immediately after successful scan
+            html5QrCode.stop().then(() => {
+              scanning = false;
+              console.log("Camera stopped after scan");
+            }).catch(err => console.error("Stop failed", err));
+          },
+          onScanFailure
+        ).then(() => {
+          scanning = true;
+        }).catch(err => {
+          document.getElementById("feedback").textContent = "❌ Camera error: " + err;
+        });
+      } else {
+        document.getElementById("feedback").textContent = "❌ No cameras found.";
+      }
+    }).catch(err => {
+      document.getElementById("feedback").textContent = "❌ Camera error: " + err;
+    });
   }
-}
-
 
   // ✅ Pause camera when tab is hidden or minimized
   document.addEventListener("visibilitychange", () => {
@@ -632,50 +356,34 @@ toast.textContent = `✅ ${status} - ${type} (Period ${periodIndex + 1})`;
     }
   });
 
-
+  // ================== DASHBOARD ==================
 // ================== DASHBOARD ==================
 async function initDashboard(studentId, student) {
   // ================= TIMETABLE =================
-  document.getElementById("studentName").textContent = student.name
-  ? `${student.name} - Dashboard`
-  : "Student Dashboard";
-
-
 if (student.timetable) {
   const tbody = document.getElementById("timetableBody");
   tbody.innerHTML = "";
 
   const todayName = new Date().toLocaleDateString("en-US", { weekday: "long" });
-  const todaySchedule = student.timetable[todayName];
+  const todaySchedule = student.timetable[todayName] || {};
 
-  if (!todaySchedule || Object.keys(todaySchedule).length === 0) {
-    // ✅ If no timetable, show placeholder row
-    tbody.innerHTML = `
-      <tr>
-        <td colspan="3" style="text-align:center; font-style:italic; color:#888;">
-          No timetable available today
-        </td>
+  // Sort periods like period1, period2, ...
+  const sortedPeriods = Object.keys(todaySchedule).sort((a, b) => {
+    const numA = parseInt(a.replace(/\D/g, "")); // extract number
+    const numB = parseInt(b.replace(/\D/g, ""));
+    return numA - numB;
+  });
+
+  sortedPeriods.forEach((p, i) => {
+    const row = todaySchedule[p];
+    tbody.innerHTML += `
+      <tr data-period="${i + 1}">
+        <td>${i + 1}</td>
+        <td>${periods[i].start} – ${periods[i].end}</td>
+        <td>${row.subject}</td>
       </tr>`;
-  } else {
-    // Sort periods like period1, period2, ...
-    const sortedPeriods = Object.keys(todaySchedule).sort((a, b) => {
-      const numA = parseInt(a.replace(/\D/g, "")); // extract number
-      const numB = parseInt(b.replace(/\D/g, ""));
-      return numA - numB;
-    });
-
-    sortedPeriods.forEach((p, i) => {
-      const row = todaySchedule[p];
-      tbody.innerHTML += `
-        <tr data-period="${i + 1}">
-          <td>${i + 1}</td>
-          <td>${periods[i].start} – ${periods[i].end}</td>
-          <td>${row.subject}</td>
-        </tr>`;
-    });
-  }
+  });
 }
-
 
   // ================= ATTENDANCE TABLE =================
   const atBody = document.querySelector("#attendanceTable tbody");
@@ -721,11 +429,12 @@ if (student.timetable) {
 
   // ================== QR SCANNER CONTROL ==================
   let lastScanTime = 0;
-   onScanSuccess=function(decodedText) {
+  function onScanSuccess(decodedText) {
     const now = new Date();
     const currentTime = now.getTime();
     if (currentTime - lastScanTime < 5000) return;
     lastScanTime = currentTime;
+
     const periodIndex = getPeriodIndex(now);
     if (periodIndex === -1) {
       document.getElementById("feedback").textContent = "❌ Not within class time!";
@@ -736,10 +445,6 @@ if (student.timetable) {
     const todayName = now.toLocaleDateString("en-US", { weekday: "long" });
     const todaySchedule = student.timetable[todayName];
     const periodKey = Object.keys(todaySchedule)[periodIndex];
-     if (!todaySchedule[periodKey]) {
-    document.getElementById("feedback").textContent = "❌ No class scheduled!";
-    return;
-}
     const subject = todaySchedule[periodKey].subject;
 
     if (text === "NORMALCLASSROOM") {
@@ -761,138 +466,27 @@ if (student.timetable) {
     }
   }
 
-  onScanFailure=function(err) {
-    console.warn("Scan failed:", err);
-    const feedback = document.getElementById("feedback");
-    feedback.textContent = "⚠️ QR scan failed. Try again.";
-  };
+  function onScanFailure(err) {}
 
-
+  startScanner(onScanSuccess, onScanFailure);
 
  
 }
-  startScanner(onScanSuccess, onScanFailure);
+
 
 
   // ================== AUTO LOGIN ==================
-
-  function openTab(tabId, btn) {
-  document.querySelectorAll(".tab").forEach(tab => tab.classList.remove("active"));
-  document.querySelectorAll(".tab-nav button").forEach(b => b.classList.remove("active"));
-  document.getElementById(tabId).classList.add("active");
-  btn.classList.add("active");
-
-  // ✅ Auto-start scanner when switching to scanner tab
-  if (tabId === "scannerTab" && !scanning) {
-    startScanner(onScanSuccess, onScanFailure);
-  }
-}
-function logout() {
-    // Stop QR scanner safely
-    if (html5QrCode && scanning) {
-        html5QrCode.stop().catch(() => {});
-        scanning = false;
-    }
-
-    // Fade out dashboard
-    dashboardSection.style.opacity = 0;
-
-    setTimeout(() => {
-        dashboardSection.style.display = "none";
-        loginSection.style.display = "flex";
-        loginSection.style.opacity = 0;
-
-        // Trigger fade-in animation
-        requestAnimationFrame(() => {
-            loginSection.style.opacity = 1;
-        });
-
-        // Clear student session
-        localStorage.removeItem("studentId");
-    }, 300);
-}
-
-// Auto-login handling
-window.onload = async () => {
+  window.onload = async () => {
     const id = localStorage.getItem("studentId");
     if (id) {
-        try {
-            const doc = await db.collection("students").doc(id).get();
-            if (doc.exists) {
-                loginSection.style.display = "none";
-                dashboardSection.style.display = "block";
-                initDashboard(id, doc.data());
-            }
-        } catch (err) {
-            console.error("Auto-login failed:", err);
-            localStorage.removeItem("studentId");
-            loginSection.style.display = "flex";
-        }
+      const doc = await db.collection("students").doc(id).get();
+      if (doc.exists) {
+        loginSection.style.display = "none";
+        dashboardSection.style.display = "block";
+        initDashboard(id, doc.data());
+      }
     }
-};
-
-document.getElementById("refreshButton").addEventListener("click", async () => {
-  const studentId = localStorage.getItem("studentId");
-  if (!studentId) return;
-
-  const doc = await db.collection("students").doc(studentId).get();
-  if (doc.exists) {
-    const student = doc.data();
-    initDashboard(studentId, student);
-    showToast("🔄 Data refreshed");
   }
-});
-const btn = document.getElementById("restartScannerBtn");
-btn.disabled = true; // disable button
-setTimeout(() => { btn.disabled = false; }, 1500); // re-enable after 1.5s
-
-  //const feedback = document.getElementById("feedback");
-
-  // ✅ Case 1: Scanner is running → just show message (don’t restart)
- /* if (scanning) {
-    feedback.textContent = "📸 Scanner is already running.";
-    showToast("⚠️ Scanner already active");
-    return;
-  }
-
-  // ✅ Case 2: Scanner is not running → try to restart cleanly
-  if (typeof html5QrCode !== "undefined") {
-    try {
-      await html5QrCode.stop().catch(() => {});
-      scanning = false;
-    } catch {}
-  }
-
-  feedback.textContent = "🔁 Restarting scanner...";
-  showToast("🔁 Restarting camera...");
-  
-  // Wait a moment before restarting (for smoother UX)*/
-  setTimeout(() => { btn.disabled = false; }, 1500);
-
-let inactivityTimer;
-function resetInactivityTimer() {
-  clearTimeout(inactivityTimer);
-  inactivityTimer = setTimeout(() => {
-    showToast("⏰ Session expired. Logging out...");
-    setTimeout(logout, 2000);
-  }, 15 * 60 * 1000); // 15 minutes
-}
-
-// Reset timer on any interaction
-["click", "mousemove", "keypress", "scroll", "touchstart"].forEach(evt => {
-  document.addEventListener(evt, resetInactivityTimer);
-});
-resetInactivityTimer();
-function showToast(message) {
-  const toast = document.getElementById("toast");
-  toast.textContent = message;
-  toast.style.display = "block";
-  setTimeout(() => { toast.style.display = "none"; }, 3000);
-}
-
-
-
-
 </script>
 
 
